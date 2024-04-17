@@ -17,7 +17,8 @@ export default async function Home ({ searchParams }: SearchParamsProps) {
   try {
     // Get the Questions from DB
     result = await getQuestions({
-      searchQuery: searchParams.q
+      searchQuery: searchParams.q,
+      filter: searchParams.filter
     })
   } catch (error) {
     // Handle any errors that occur during the data fetching
