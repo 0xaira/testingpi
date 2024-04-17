@@ -169,7 +169,7 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
               </FormLabel>
               <FormControl className="mt-3.5">
                 <Editor
-                  apiKey={process.env.NEXT_CLERK_WEBHOOK_SECRET}
+                  apiKey={process.env.NEXT_PUBLIC_TINY_EDITOR_API_KEY}
                   onInit={(evt, editor) => {
                     // @ts-ignore
                     editorRef.current = editor
