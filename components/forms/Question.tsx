@@ -36,7 +36,7 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
   const path = usePathname()
   const { mode } = useTheme()
 
-  let parsedQuestionDetails
+  let parsedQuestionDetails: any
   let groupedTags
   if (questionDetails) {
     try {

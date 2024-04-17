@@ -1,27 +1,20 @@
-import Question from '@/components/forms/Question'
-import { getQuestionByID } from '@/lib/actions/question.action'
+// "use client";
+import ProfileEdit from '@/components/forms/ProfileEdit'
 import { getUserById } from '@/lib/actions/user.action'
-import { ParamsProps } from '@/types'
 import { auth } from '@clerk/nextjs'
+import { redirect } from 'next/navigation'
 import React from 'react'
 
-const page = async ({ params }: ParamsProps) => {
+const page = async () => {
   const { userId } = auth()
-
-  if (!userId) return null
-
+  if (!userId) redirect('/sign-in')
   const mongoUser = await getUserById({ userId })
-  const result = await getQuestionByID({ questionId: params.id })
 
   return (
     <>
-      <h1 className="h1-bold text-dark100_light900">Edit Question</h1>
-      <div className=" mt-9">
-        <Question
-          mongoUserId={mongoUser}
-          type="Edit"
-          questionDetails={JSON.stringify(result)}
-        />
+      <h1 className=" h1-bold">Edit Profile</h1>
+      <div>
+        <ProfileEdit mongoUser={JSON.stringify(mongoUser)} clerkId={userId} />
       </div>
     </>
   )
