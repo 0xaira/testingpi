@@ -2,34 +2,45 @@
 
 import User from '@/database/user.model'
 import { connectToDatabase } from '../mongoose'
-import { CreateUserParams, DeleteUserParams, GetAllUsersParams, GetSavedQuestionsParams, GetUserByIdParams, GetUserStatsParams, ToggleSaveQuestionParams, UpdateUserParams } from './shared.types'
+import {
+  CreateUserParams,
+  DeleteUserParams,
+  GetAllUsersParams,
+  GetSavedQuestionsParams,
+  GetUserByIdParams,
+  GetUserStatsParams,
+  ToggleSaveQuestionParams,
+  UpdateUserParams
+} from './shared.types'
 import { revalidatePath } from 'next/cache'
 import Question from '@/database/question.model'
-import { FilterQuery } from 'mongoose'
 import Tag from '@/database/tag.model'
+import { FilterQuery } from 'mongoose'
 import Answer from '@/database/answer.model'
 
+// Get User By Id Server Action
 export async function getUserById (params: any) {
   try {
     await connectToDatabase()
     const { userId } = params
     const user = await User.findOne({ clerkId: userId })
-
+    // console.log(user);
     return user
   } catch (err) {
     console.log(err)
     throw err
   }
 }
+
+// Create User Server Action
 export async function createUser (userData: CreateUserParams) {
   try {
     await connectToDatabase()
-
     const newUser = await User.create(userData)
     return newUser
-  } catch (error) {
-    console.log(error)
-    throw error
+  } catch (err) {
+    console.log(err)
+    throw err
   }
 }
 
@@ -50,6 +61,7 @@ export async function updateUser (params: UpdateUserParams) {
   }
 }
 
+// Delete User Server Action
 export async function deleteUser (params: DeleteUserParams) {
   try {
     await connectToDatabase()
@@ -60,14 +72,21 @@ export async function deleteUser (params: DeleteUserParams) {
     if (!user) {
       throw new Error('User not found')
     }
-    // const userQuestionIds = await Question.find({ author: user._id }).distinct(
-    //   '_id'
-    // )
 
+    // delete User from database
+    // Delete questions , answers, comments,etc
+
+    // get user question ids
+    // const userQuestionIds = await Question.find({ author: user._id }).distinct(
+    //   "_id"
+    // );
+
+    // delete user questions
     await Question.deleteMany({ author: user._id })
 
     // TODO: delete user answers, comments, etc
 
+    // Delete User
     const deletedUser = await User.findByIdAndDelete(user._id)
     return deletedUser
   } catch (err) {
@@ -82,7 +101,7 @@ export async function getAllUsers (params: GetAllUsersParams) {
   try {
     await connectToDatabase()
     // const { page = 1, pageSize = 20, filter, searchQuery } = params;
-    const { searchQuery } = params
+    const { searchQuery, filter } = params
     const query: FilterQuery<typeof User> = {}
 
     if (searchQuery) {
@@ -90,6 +109,23 @@ export async function getAllUsers (params: GetAllUsersParams) {
         { name: { $regex: new RegExp(searchQuery, 'i') } },
         { username: { $regex: new RegExp(searchQuery, 'i') } }
       ]
+    }
+
+    let sortOptions = {}
+
+    switch (filter) {
+      case 'new_users':
+        sortOptions = { joinedAt: -1 }
+        break
+      case 'old_users':
+        sortOptions = { joinedAt: 1 }
+        break
+      case 'top_contributers':
+        sortOptions = { reputation: -1 }
+        break
+
+      default:
+        break
     }
 
     const users = await User.find(query).sort({ createdAt: -1 }) // ----- sort by createdAt in descending order
@@ -100,6 +136,7 @@ export async function getAllUsers (params: GetAllUsersParams) {
   }
 }
 
+// Save Question
 export async function toggleSaveQuestion (params: ToggleSaveQuestionParams) {
   try {
     await connectToDatabase()
