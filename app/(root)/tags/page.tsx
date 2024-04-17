@@ -8,7 +8,10 @@ import React from 'react'
 import { SearchParamsProps } from '@/types'
 
 const page = async ({ searchParams }: SearchParamsProps) => {
-  const results = await getAllTags({ searchQuery: searchParams.q })
+  const results = await getAllTags({
+    searchQuery: searchParams.q,
+    filter: searchParams.filter
+  })
   return (
     <>
       <h1 className="h1-bold text-dark100_light900">Tags</h1>

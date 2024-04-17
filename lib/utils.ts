@@ -1,11 +1,14 @@
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import qs from 'query-string'
+
 export function cn (...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
 export const getTimestamp = (createdAt: Date): string => {
+  // console.log(createdAt);
+  // NEEDS fixing
   const now = new Date()
   const timeDifference = now.getTime() - createdAt.getTime()
 
@@ -19,6 +22,7 @@ export const getTimestamp = (createdAt: Date): string => {
 
   if (timeDifference < minute) {
     const seconds = Math.floor(timeDifference / 1000)
+    // console.log(`${seconds} ${seconds === 1 ? "second" : "seconds"} ago`);
     return `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`
   } else if (timeDifference < hour) {
     const minutes = Math.floor(timeDifference / minute)
@@ -53,7 +57,7 @@ export const formatAndDivideNumber = (num: number): string => {
       return num.toString()
     } else {
       // Handle the case when num is undefined or null
-      return 'N/A' // or any other appropriate value or error handling strategy
+      return '' // or any other appropriate value or error handling strategy
     }
   }
 }
