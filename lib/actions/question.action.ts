@@ -1,3 +1,4 @@
+/* eslint-disable brace-style */
 /* eslint-disable no-useless-catch */
 'use server'
 import Question from '@/database/question.model'
