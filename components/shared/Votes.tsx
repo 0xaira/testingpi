@@ -1,4 +1,6 @@
 'use client'
+import { downvoteAnswer, upvoteAnswer } from '@/lib/actions/answer.action'
+import { viewQuestion } from '@/lib/actions/interaction.action'
 import {
   downvoteQuestion,
   upvoteQuestion
@@ -8,7 +10,7 @@ import { formatAndDivideNumber } from '@/lib/utils'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
-import { viewQuestion } from '@/lib/actions/interaction.action'
+import { toast } from '../ui/use-toast'
 
 interface Props {
   type: string;
@@ -34,16 +36,29 @@ const Votes = ({
   const pathname = usePathname()
   const router = useRouter()
 
+  // Call Saved Server Actions from here
   const handleSaved = async () => {
     await toggleSaveQuestion({
       userId: JSON.parse(userId),
       questionId: JSON.parse(itemId),
       path: pathname
     })
+
+    return toast({
+      title: `Question ${
+        !hasSaved ? 'Saved in' : 'Removed from your collection'
+      }`,
+      variant: !hasSaved ? 'default' : 'destructive'
+    })
   }
+
+  // Call to Vote Server Actions from Client component
   const handleVote = async (action: string) => {
     if (!userId) {
-      return
+      return toast({
+        title: 'Log in to vote',
+        description: 'You need to log in to vote a question'
+      })
     }
 
     if (action === 'upvote') {
@@ -56,14 +71,18 @@ const Votes = ({
           path: pathname
         })
       } else if (type === 'Answer') {
-        // await upvoteAnswer({
-        //   questionId: JSON.parse(itemId),
-        //   userId: JSON.parse(userId),
-        //   hasupVoted,
-        //   hasdownVoted,
-        //   path: pathname,
-        // });
+        await upvoteAnswer({
+          answerId: JSON.parse(itemId),
+          userId: JSON.parse(userId),
+          hasupVoted,
+          hasdownVoted,
+          path: pathname
+        })
       }
+      return toast({
+        title: `Upvote ${!hasupVoted ? 'Successful' : 'Removed'}`,
+        variant: !hasupVoted ? 'default' : 'destructive'
+      })
 
       // todo: TOAST
     } else if (action === 'downvote') {
@@ -76,24 +95,30 @@ const Votes = ({
           path: pathname
         })
       } else if (type === 'Answer') {
-        // await upvoteAnswer({
-        //   questionId: JSON.parse(itemId),
-        //   userId: JSON.parse(userId),
-        //   hasupVoted,
-        //   hasdownVoted,
-        //   path: pathname,
-        // });
+        await downvoteAnswer({
+          answerId: JSON.parse(itemId),
+          userId: JSON.parse(userId),
+          hasupVoted,
+          hasdownVoted,
+          path: pathname
+        })
       }
 
       // todo: TOAST
+      return toast({
+        title: `Downvote ${!hasdownVoted ? 'Successful' : 'Removed'}`,
+        variant: !hasdownVoted ? 'default' : 'destructive'
+      })
     }
   }
+
   useEffect(() => {
     viewQuestion({
       questionId: JSON.parse(itemId),
       userId: userId ? JSON.parse(userId) : undefined
     })
   }, [itemId, userId, pathname, router])
+
   return (
     // All Container
     <div className="flex gap-5">
@@ -146,18 +171,20 @@ const Votes = ({
         </div>
       </div>
 
-      <Image
-        src={
-          hasSaved
-            ? '/assets/icons/star-filled.svg'
-            : '/assets/icons/star-red.svg'
-        }
-        width={18}
-        height={18}
-        alt="save"
-        className="cursor-pointer"
-        onClick={handleSaved}
-      />
+      {type === 'Question' && (
+        <Image
+          src={
+            hasSaved
+              ? '/assets/icons/star-filled.svg'
+              : '/assets/icons/star-red.svg'
+          }
+          width={18}
+          onClick={handleSaved}
+          height={18}
+          alt="save"
+          className="cursor-pointer"
+        />
+      )}
     </div>
   )
 }

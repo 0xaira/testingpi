@@ -22,6 +22,7 @@ import { Badge } from '../ui/badge'
 import Image from 'next/image'
 import { createQuestions, editQuestion } from '@/lib/actions/question.action'
 import { useTheme } from '@/context/ThemeProvider'
+import { toast } from '../ui/use-toast'
 
 interface Props {
   mongoUserId: string;
@@ -36,6 +37,7 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
   const path = usePathname()
   const { mode } = useTheme()
 
+  // const parsedQuestionDetails = JSON.parse(questionDetails || "");
   let parsedQuestionDetails: any
   let groupedTags
   if (questionDetails) {
@@ -50,8 +52,6 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
     // Handle the case where questionDetails is empty (e.g., provide a default value or handle the error in another way).
     parsedQuestionDetails = {} // Empty object or any other default value
   }
-
-  console.log(parsedQuestionDetails)
 
   const form = useForm<z.infer<typeof QuestionsSchema>>({
     resolver: zodResolver(QuestionsSchema),
@@ -105,9 +105,6 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
     setIsSubmitting(true)
 
     try {
-      // make a async call to your api --> create a question
-      // contain all data
-      // navigate to home
       if (type === 'Edit') {
         await editQuestion({
           questionId: parsedQuestionDetails._id,
@@ -131,8 +128,6 @@ const Question = ({ mongoUserId, type, questionDetails }: Props) => {
     } finally {
       setIsSubmitting(false)
     }
-
-    console.log(values)
   }
   return (
     <Form {...form}>
