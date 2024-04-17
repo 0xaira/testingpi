@@ -4,14 +4,19 @@ import NoResults from '@/components/shared/NoResults'
 import LocalSearchbar from '@/components/shared/search/LocalSearchbar'
 import { QuestionFilters } from '@/constants/filters'
 import { getSavedQuestions } from '@/lib/actions/user.action'
+import { SearchParamsProps } from '@/types'
 import { auth } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 
-export default async function Collection () {
+export default async function Collection ({ searchParams }: SearchParamsProps) {
   const { userId } = auth()
   if (!userId) redirect('/sign-in')
 
-  const result = await getSavedQuestions({ clerkId: userId })
+  // Get the Questions from DB
+  const result = await getSavedQuestions({
+    clerkId: userId,
+    searchQuery: searchParams.q
+  })
 
   return (
     <>

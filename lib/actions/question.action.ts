@@ -1,20 +1,40 @@
+/* eslint-disable brace-style */
 /* eslint-disable no-useless-catch */
 'use server'
-
 import Question from '@/database/question.model'
 import { connectToDatabase } from '../mongoose'
 import Tag from '@/database/tag.model'
-import { CreateQuestionParams, DeleteQuestionParams, GetQuestionByIdParams, GetQuestionsParams, QuestionVoteParams, EditQuestionParams } from './shared.types'
+import {
+  CreateQuestionParams,
+  DeleteQuestionParams,
+  EditQuestionParams,
+  GetQuestionByIdParams,
+  GetQuestionsParams,
+  QuestionVoteParams
+} from './shared.types'
 import User from '@/database/user.model'
 import { revalidatePath } from 'next/cache'
-import Interaction from '@/database/interaction.model'
 import Answer from '@/database/answer.model'
+import Interaction from '@/database/interaction.model'
+import { FilterQuery } from 'mongoose'
 
+// Get all questions
 export async function getQuestions (params: GetQuestionsParams) {
   try {
     // Connect to DB
     await connectToDatabase()
-    const questions = await Question.find({})
+    const { searchQuery } = params
+
+    const query: FilterQuery<typeof Question> = {}
+    if (searchQuery) {
+      query.$or = [
+        { title: { $regex: new RegExp(searchQuery, 'i') } },
+        { content: { $regex: new RegExp(searchQuery, 'i') } }
+      ]
+    }
+
+    const questions = await Question.find(query)
+      .sort({ createdAt: -1 })
       .populate({
         path: 'tags',
         model: Tag
@@ -30,6 +50,7 @@ export async function getQuestions (params: GetQuestionsParams) {
   }
 }
 
+// Create Question Action
 export async function createQuestions (params: CreateQuestionParams) {
   try {
     // connect to DB
@@ -97,21 +118,28 @@ export async function getQuestionByID (params: GetQuestionByIdParams) {
   }
 }
 
+// Upvote Question
 export async function upvoteQuestion (params: QuestionVoteParams) {
   try {
     await connectToDatabase()
     const { questionId, userId, hasupVoted, hasdownVoted, path } = params
 
+    // Update Query to pass
     let updateQuery = {}
 
+    // if already upvoted ---> remove from upvotes
     if (hasupVoted) {
       updateQuery = { $pull: { upvotes: userId } }
-    } else if (hasdownVoted) {
+    }
+    // if downvoted ---> remove from downvotes and add to upvote
+    else if (hasdownVoted) {
       updateQuery = {
         $pull: { downvotes: userId },
         $push: { upvotes: userId }
       }
-    } else {
+    }
+    // If did not do anything yet---> just add to upvotes
+    else {
       updateQuery = {
         $addToSet: { upvotes: userId }
       }
@@ -124,12 +152,15 @@ export async function upvoteQuestion (params: QuestionVoteParams) {
     if (!question) {
       throw new Error('Question not found')
     }
+
+    // Increment author's reputation by +10 for upvoting a question
     revalidatePath(path)
   } catch (error) {
     console.log(error)
   }
 }
 
+// Down Vote Question
 export async function downvoteQuestion (params: QuestionVoteParams) {
   try {
     await connectToDatabase()
@@ -167,6 +198,7 @@ export async function downvoteQuestion (params: QuestionVoteParams) {
   }
 }
 
+// Delete Question
 export async function deleteQuestion (params: DeleteQuestionParams) {
   try {
     connectToDatabase()
