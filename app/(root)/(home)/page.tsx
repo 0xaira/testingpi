@@ -8,17 +8,16 @@ import { HomePageFilters } from '@/constants/filters'
 import Link from 'next/link'
 import { getQuestions } from '@/lib/actions/question.action'
 import { SearchParamsProps } from '@/types'
+import Pagination from '@/components/shared/Pagination'
 
 export default async function Home ({ searchParams }: SearchParamsProps) {
-  // Get the Questions from DB
-  // Get the Questions from DB
   let result
-
   try {
     // Get the Questions from DB
     result = await getQuestions({
       searchQuery: searchParams.q,
-      filter: searchParams.filter
+      filter: searchParams.filter,
+      page: searchParams.page ? +searchParams.page : 1
     })
   } catch (error) {
     // Handle any errors that occur during the data fetching
@@ -55,9 +54,9 @@ export default async function Home ({ searchParams }: SearchParamsProps) {
 
       {/* QUESTION CARD */}
       <div className="mt-10 flex w-full flex-col gap-6 ">
-        {result!.questions.length > 0
+        {result && result.questions && result.questions.length > 0
           ? (
-              result!.questions.map((question) => {
+              result.questions.map((question) => {
                 return (
               <QuestionCard
                 _id={question._id}
@@ -83,6 +82,12 @@ export default async function Home ({ searchParams }: SearchParamsProps) {
             linkText="Ask a Question"
           />
             )}
+      </div>
+      <div className=" mt-10">
+        <Pagination
+          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          isNext={result.isNext}
+        />
       </div>
     </>
   )

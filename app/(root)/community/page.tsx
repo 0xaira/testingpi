@@ -1,16 +1,19 @@
 import UserCard from '@/components/cards/UserCard'
 import Filter from '@/components/shared/Filter'
+import Pagination from '@/components/shared/Pagination'
 import LocalSearchbar from '@/components/shared/search/LocalSearchbar'
 import { UserFilters } from '@/constants/filters'
 import { getAllUsers } from '@/lib/actions/user.action'
+import { SearchParamsProps } from '@/types'
 import Link from 'next/link'
 import React from 'react'
-import { SearchParamsProps } from '@/types'
+
 const Community = async ({ searchParams }: SearchParamsProps) => {
   const searchQuery = searchParams.q
   const filter = searchParams.filter
+  const page = searchParams.page ? +searchParams.page : 1
 
-  const results = await getAllUsers({ searchQuery, filter })
+  const results = await getAllUsers({ searchQuery, filter, page })
   return (
     <>
       <h1 className="h1-bold text-dark100_light900">All Users</h1>
@@ -36,12 +39,18 @@ const Community = async ({ searchParams }: SearchParamsProps) => {
           : (
           <div className="paragraph-regular text-dark200_light800 mx-auto max-w-4xl text-center">
             <p className="mb-2">No users yet</p>
-            <Link href="/sign-up" className="font-bold text-accent-blue">
+            <Link href="/sign-up" className=" font-bold text-accent-blue">
               Join to be the first
             </Link>
           </div>
             )}
       </section>
+      <div className=" mt-10">
+        <Pagination
+          pageNumber={searchParams?.page ? +searchParams.page : 1}
+          isNext={results.isNext}
+        />
+      </div>
     </>
   )
 }

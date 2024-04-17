@@ -1,16 +1,18 @@
 import Filter from '@/components/shared/Filter'
 import NoResults from '@/components/shared/NoResults'
+import Pagination from '@/components/shared/Pagination'
 import LocalSearchbar from '@/components/shared/search/LocalSearchbar'
 import { TagFilters } from '@/constants/filters'
-import { getAllTags } from '@/lib/actions/tag.action'
+import { getAllTags } from '@/lib/actions/tag.actions'
+import { SearchParamsProps } from '@/types'
 import Link from 'next/link'
 import React from 'react'
-import { SearchParamsProps } from '@/types'
 
-const page = async ({ searchParams }: SearchParamsProps) => {
+const Tag = async ({ searchParams }: SearchParamsProps) => {
   const results = await getAllTags({
     searchQuery: searchParams.q,
-    filter: searchParams.filter
+    filter: searchParams.filter,
+    page: searchParams.page ? +searchParams.page : 1
   })
   return (
     <>
@@ -23,6 +25,7 @@ const page = async ({ searchParams }: SearchParamsProps) => {
           placeholder="Search by tag name..."
         />
 
+        {/* POPULAR FILTER IS NOT WORKING */}
         <Filter
           filters={TagFilters}
           otherClasses="min-h-[56px] sm:min-w-[170px]"
@@ -30,9 +33,9 @@ const page = async ({ searchParams }: SearchParamsProps) => {
       </div>
 
       <section className="mt-12 flex flex-wrap gap-4">
-        {results!.tags.length > 0
+        {results.tags.length > 0
           ? (
-              results!.tags.map((tag) => (
+              results.tags.map((tag) => (
             <Link
               href={`/tags/${tag._id}`}
               key={tag._id}
@@ -63,8 +66,15 @@ const page = async ({ searchParams }: SearchParamsProps) => {
           />
             )}
       </section>
+
+      <div className=" mt-10">
+        <Pagination
+          isNext={results?.isNext}
+          pageNumber={searchParams.page ? +searchParams.page : 1}
+        />
+      </div>
     </>
   )
 }
 
-export default page
+export default Tag
