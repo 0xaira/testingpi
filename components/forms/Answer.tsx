@@ -135,7 +135,7 @@ const Answer = ({ question, questionId, authorId }: Props) => {
               <FormItem className=" flex w-full flex-col">
                 <FormControl className="mt-3.5">
                   <Editor
-                    apiKey={process.env.NEXT_PUBLIC_TINY_MCE_API_KEY}
+                    apiKey={process.env.NEXT_CLERK_WEBHOOK_SECRET}
                     onInit={(evt, editor) => {
                       // @ts-ignore
                       editorRef.current = editor
